@@ -65,10 +65,9 @@ def atty_interruptions(input_dir, output_dir):
 
         with open("{path}/{docket_num}_interruptions.json".format(
                 path=output_dir, docket_num=docket_num, last_name=last_name), "w+") as f:
-            json.dump({
-                "attorneys": interrupted_speakers,
-                "n_interruptions": interruptions_count
-            }, f)
+            json.dump(
+                dict(zip(interrupted_speakers, interruptions_count)),
+                f)
 
         print("{docket_num} extracted successfully!".format(docket_num=docket_num))
 
