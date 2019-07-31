@@ -12,6 +12,7 @@ begin_arg_pattern = re.compile("\s{0,4}ORAL\sARGUMENT\sOF\s|\s{0,4}ORAL\sARGUMEN
 petitioner_pattern = re.compile("PETITIONE[R|RS]|APPELLAN[T|TS]|PLAINTIF[F|FS]")
 respondent_pattern = re.compile("RESPONDEN[T|TS]|APPELLE[E|ES]|DEFENDAN[T|TS]")
 
+break_pattern = re.compile("^(ORAL ARGUMENT|ON BEHALF)")
 
 begin_speech_pattern = re.compile("^(MR\.|(CHIEF )*JUSTICE|MS\.|GENERAL|QUESTION|ORAL|REBUTTAL)")
 full_speech_pattern = re.compile("^(MR\.|(CHIEF )*JUSTICE|MS\.|GENERAL|QUESTION|ORAL|REBUTTAL)([A-Z]| )*:")
@@ -20,3 +21,5 @@ appearance_pattern=re.compile("^APPEARANCES:")
 opinion_pattern=re.compile("^OPINION:")
 
 non_attorney_pattern = re.compile("^((CHIEF )*JUSTICE|GENERAL|QUESTION|ORAL|REBUTTAL)")
+
+interruption_pattern = re.compile("^((CHIEF )*JUSTICE|QUESTION)")

@@ -12,7 +12,7 @@ import json
 from . import OralArgument
 
 # List of possible interruption values
-INTERRUPTION_LIST = "QUESTION"
+INTERRUPTION_RE = re.compile("^(QUESTION|(CHIEF )*JUSTICE)")
 
 
 def atty_interruptions(input_dir, output_dir):
@@ -36,6 +36,7 @@ def atty_interruptions(input_dir, output_dir):
 
         interrupted_speakers = []
         interruptions_count = []
+        ir_wordcount = []
 
         # creates speaker exports
         for speaker in attorney_speakers:
@@ -48,25 +49,38 @@ def atty_interruptions(input_dir, output_dir):
             speaker_corpus = [t for n, t in zip(speaker_order, speaker_texts) if n == speaker]
 
             with open(output_filename, "w+") as f:
-                f.writelines(speaker_corpus)
+                f.write("\n".join(speaker_corpus))
 
             interruptions = 0
+            interruption_corpus = []
+            interruptors = []
             for i in range(len(speaker_order)):
                 current_speaker = speaker_order[i]
                 try:
                     next_speaker = speaker_order[i + 1]
-                    if current_speaker == speaker and next_speaker in INTERRUPTION_LIST:
+                    if current_speaker == speaker and re.search(INTERRUPTION_RE, next_speaker):
                         interruptions += 1
+                        interruptors.append(next_speaker)
+                        interruption_corpus.append(speaker_texts[i + 1])
                 except IndexError:
                     pass
+
+            with open("{path}/{docket_num}_{last_name}_interruptions.txt".format(
+                path=output_dir, docket_num=docket_num, last_name=last_name), "w+") as f:
+                f.write("\n".join(interruption_corpus))
 
             interrupted_speakers.append(last_name)
             interruptions_count.append(interruptions)
 
+            # gets word count of interruptions
+            ir_wordcount.append(sum(len(re.findall(r'\w+', x)) for x in interruption_corpus))
+
         with open("{path}/{docket_num}_interruptions.json".format(
-                path=output_dir, docket_num=docket_num, last_name=last_name), "w+") as f:
+                path=output_dir, docket_num=docket_num), "w+") as f:
             json.dump(
-                dict(zip(interrupted_speakers, interruptions_count)),
+                [
+                    {"name": s, "count": c, "total_words": w}
+                    for s,c,w in zip(interrupted_speakers, interruptions_count, ir_wordcount)],
                 f)
 
         print("{docket_num} extracted successfully!".format(docket_num=docket_num))

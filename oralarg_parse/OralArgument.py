@@ -94,9 +94,16 @@ class OralArgument:
             return searched_lines[0].replace("(", " ").replace(")", " ")
 
     def extract_speakers(self):
-        speaker_lines = [
-            x for x in self.clean_transcript if re.search(full_speech_pattern, x)
-        ]
+        ct = self.clean_transcript
+
+        speaker_lines = []
+        for i in range(len(ct)):
+            x = ct[i]
+            if re.search(full_speech_pattern, x):
+                speaker_lines.append(x)
+            elif not re.search(break_pattern, x):
+                if len(speaker_lines) > 0:
+                    speaker_lines[len(speaker_lines) - 1] = speaker_lines[len(speaker_lines) - 1] + " " + x
 
         if any(speaker_lines):
             speakers = tuple(
@@ -104,7 +111,7 @@ class OralArgument:
             )
 
             cleaned_lines = tuple(
-                re.sub(full_speech_pattern, "", x) for x in speaker_lines
+                re.sub(full_speech_pattern, "", x).replace("\n", " ") for x in speaker_lines
             )
 
             return speakers, cleaned_lines
