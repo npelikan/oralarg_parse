@@ -37,6 +37,7 @@ def atty_interruptions(input_dir, output_dir):
         interrupted_speakers = []
         interruptions_count = []
         ir_wordcount = []
+        interruption_data = []
 
         # creates speaker exports
         for speaker in attorney_speakers:
@@ -65,12 +66,24 @@ def atty_interruptions(input_dir, output_dir):
                 except IndexError:
                     pass
 
+            interruptor_data = {}
+            for interruptor in set(interruptors):
+                si_corpus = [
+                    text for speaker, text in zip(interruptors, interruption_corpus) if speaker == interruptor
+                ]
+                interruptor_data[interruptor] = {
+                    "count": len(si_corpus),
+                    "word_count": sum(len(re.findall(r'\w+', x)) for x in si_corpus)
+                }
+
+
             with open("{path}/{docket_num}_{last_name}_interruptions.txt".format(
                 path=output_dir, docket_num=docket_num, last_name=last_name), "w+") as f:
                 f.write("\n".join(interruption_corpus))
 
             interrupted_speakers.append(last_name)
             interruptions_count.append(interruptions)
+            interruption_data.append(interruptor_data)
 
             # gets word count of interruptions
             ir_wordcount.append(sum(len(re.findall(r'\w+', x)) for x in interruption_corpus))
@@ -79,8 +92,14 @@ def atty_interruptions(input_dir, output_dir):
                 path=output_dir, docket_num=docket_num), "w+") as f:
             json.dump(
                 [
-                    {"name": s, "count": c, "total_words": w}
-                    for s,c,w in zip(interrupted_speakers, interruptions_count, ir_wordcount)],
+                    {"name": s, "total_count": c, "total_words": w, "interruption_data": i}
+                    for s,c,w,i in zip(
+                        interrupted_speakers,
+                        interruptions_count,
+                        ir_wordcount,
+                        interruption_data
+                    )
+                ],
                 f)
 
         print("{docket_num} extracted successfully!".format(docket_num=docket_num))
